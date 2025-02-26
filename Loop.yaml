@@ -1,7 +1,7 @@
 - name: Loops
   hosts: localhost
   become: true
-  # Var can be used
+
   tasks:
     - name: Installing
       ansible.builtin.apt:
@@ -9,24 +9,28 @@
          state: present
       loop:
         - mysql-server
-        - mysql
+        - sql
         - nginx
+      retries: 3
+      delay: 2
       ignore_errors: true  # considers all errors
       register: result  #Stores output of apt command: includes rc value too
+      delegate_to: localhost
 
     - name: install result
       debug: 
-        # var: result
-        msg: " Installed Successgully {{item.item}}"
+        msg: " Installed Successfully {{item}}"  # can print whole result as well
       loop: "{{result.results}}"
       when: item.rc is defined and item.rc == 0
+      # other condts like std error and stdout==ok --> print result to know this
+      # this is required to check the script example while executing some commands rc may be 0 but command itself may be wrong
 
     - name: Failed services
       debug:
-        msg: "Failed to install {{item.item}} "
-      loop: "{{result.results}}"  #Indentation
+        msg: Failed to install {{item}} because {{result.stderr}}
+      loop: "{{result.results}}"  #register stores elements as results only
       when: item.rc is defined and item.rc !=0
-      
+    
 
     # - name: Starting and enabling
     #   ansible.builtin.service: #This module doesnt allow the use of var loop
