@@ -1,0 +1,24 @@
+---
+- name: 
+  hosts: localhost
+  become: yes
+  tasks:
+    #- name: Remove the file
+      #file:
+      #   path: /mnt/c/Users/I759446/Downloads/file.tar.gz
+      # state: absent 
+
+    - name: Creating a file
+      ansible.builtin.file:
+        path: C:\Users\I759446\Downloads\file.txt
+        state: touch
+
+    - name: Writing to a file
+      ansible.builtin.lineinfile:
+        path: C:\Users\I759446\Downloads\file.txt
+        line: "This module is to ensure a line is present in the file"
+
+    - name: Same using jinja2 template
+      ansible.builtin.template:
+        src: content.j2
+        dest: C:\Users\I759446\Downloads\file.txt
