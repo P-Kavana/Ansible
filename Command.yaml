@@ -1,0 +1,35 @@
+- name: Task1
+  hosts: localhost
+  become: true
+  tasks:
+    # - name: Updating package index
+    #   shell: sudo apt update
+    # - name: Installing Apache
+    #   command: sudo apt install apache2 -y
+    # - name: Starting Apache
+    #   command: sudo systemctl start apache2 
+    # - name: Checking
+    #   command: sudo systemctl status apache2
+   
+    # - name: Installing Apache
+    #   shell: "sudo apt update & sudo apt install apache2 -y & sudo systemctl start apache2 & sudo systemctl status apache2"
+    #   shell:|
+          #  sudo apt update
+          #  sudo apt install apache2 -y
+          #  sudo systemctl start apache2
+    #   # shell: "apache2 --v"
+    #   register: Output
+
+    - name: ubuntu commands
+      command: "ls"
+      # command: "-ls"
+      register: output
+
+    - name: Printing the Output
+      debug:
+        msg: "{{output}}"
+   
+
+    
+   
+   
