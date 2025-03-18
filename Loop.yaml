@@ -1,37 +1,51 @@
 - name: Loops
   hosts: localhost
   become: true
-
+  gather_facts: no  #This isbecos it simply consumes space on hosts
   tasks:
-    - name: Installing
-      ansible.builtin.apt:
-         name: "{{ item }}"
-         state: present
-      loop:
-        - mysql-server
-        - sql
-        - nginx
-      retries: 3
-      delay: 2
-      ignore_errors: true  # considers all errors
-      register: result  #Stores output of apt command: includes rc value too
-      delegate_to: localhost
+    - name: block
+      block:
+      - name: Installing
+        ansible.builtin.apt:
+          name: "{{ item }}"  #name can directly have a list as well
+          state: present
+        loop:
+          - mysql-server
+          - nginx
+          - sqli
+        retries: 3
+        delay: 2
+        # ignore_errors: true  # considers all errors
+        register: result  #Stores output of apt command as var.results: includes rc value too
+        delegate_to: localhost #File oprn
+      # Because of ignore_errors: true, even if a task inside the block fails,
+      # Ansible will not jump to the rescue block immediately. Instead, it will continue executing the remaining tasks in the block.
+      rescue:
+      - name: failed
+        debug:
+          msg: Failed to install {{item.item}}
+        loop: "{{result.results}}"
 
     - name: install result
       debug: 
-        msg: " Installed Successfully {{item}}"  # can print whole result as well
+        msg: " Installed Successfully {{item.item}}"  # can print whole result as well
       loop: "{{result.results}}"
-      when: item.rc is defined and item.rc == 0
-      # other condts like std error and stdout==ok --> print result to know this
+      # when: item.rc is defined and item.rc == 0
+      when: item.failed == false
+      # other condts like stderr and stdout==ok --> print result to know this
       # this is required to check the script example while executing some commands rc may be 0 but command itself may be wrong
 
     - name: Failed services
       debug:
-        msg: Failed to install {{item}} because {{result.stderr}}
+        msg: Failed to install {{item.item}} because {{item.msg}} #Print item and check for the parameters you want
       loop: "{{result.results}}"  #register stores elements as results only
-      when: item.rc is defined and item.rc !=0
+      # when: item.rc is defined and item.rc !=0
+      when: item.failed == true
     
-
+    # - name: Storing to a file
+     # comment/shell/template/copy/lineinfile/blockinfile
+      
+      
     # - name: Starting and enabling
     #   ansible.builtin.service: #This module doesnt allow the use of var loop
     #     name: "{{ item }}"
